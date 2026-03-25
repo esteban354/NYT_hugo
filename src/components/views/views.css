@@ -1,0 +1,119 @@
+.view-container {
+  width: 100%;
+}
+
+.search-form {
+  display: flex;
+  gap: 0;
+  margin-bottom: 2rem;
+  width: 100%;
+  max-width: 600px;
+}
+
+.search-form.multi-field {
+  max-width: 800px;
+}
+
+.search-input,
+.search-select {
+  padding: 0.8rem 1rem;
+  background-color: transparent;
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  font-family: var(--font-body);
+  outline: none;
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+}
+
+.search-input {
+  flex-grow: 1;
+  border-left: none;
+  border-right: none;
+}
+
+.search-input:focus,
+.search-select:focus {
+  border-color: var(--text-color);
+}
+
+.search-select {
+  border-radius: 0;
+}
+
+.search-btn {
+  padding: 0.8rem 1.5rem;
+  background-color: var(--text-color);
+  color: var(--bg-color);
+  border: 1px solid var(--text-color);
+  cursor: pointer;
+  font-family: var(--font-title);
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: opacity 0.2s;
+}
+
+.search-btn:hover {
+  opacity: 0.8;
+}
+
+/* Fallbacks for forms that don't have all 3 pieces */
+.search-form > input:first-child {
+  border-left: 1px solid var(--border-color);
+}
+
+/* Layout utilities */
+.mb-4 { margin-bottom: 1.5rem; }
+.mt-4 { margin-top: 1.5rem; }
+.mb-2 { margin-bottom: 0.75rem; }
+.mt-2 { margin-top: 0.75rem; }
+.text-muted { color: var(--meta-text); }
+.font-semibold { font-weight: 600; }
+.capitalize { text-transform: capitalize; }
+
+/* Tables */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.flat-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2rem;
+  font-size: 0.95rem;
+}
+
+.flat-table th,
+.flat-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.flat-table th {
+  font-family: var(--font-title);
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+/* Details and smaller cards */
+.details-container {
+  max-width: 800px;
+}
+
+.p-card {
+  margin-bottom: 1.5rem;
+}
+
+.isbn-list {
+  list-style: none;
+  padding: 0;
+  font-size: 0.9rem;
+  color: var(--meta-text);
+}
+
+.isbn-list li {
+  padding: 0.25rem 0;
+  border-bottom: 1px dashed var(--border-color);
+}

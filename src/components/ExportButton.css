@@ -1,0 +1,16 @@
+.export-btn {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  padding: 0.5rem 1rem;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  align-self: flex-start;
+  margin-bottom: 1rem;
+}
+
+.export-btn:hover {
+  background-color: var(--placeholder-bg);
+}
