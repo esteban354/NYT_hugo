@@ -1,3 +1,0 @@
-/* Card styles shared between BookCard and ArticleCard */
-/* These are imported by both but only need to be defined once.
-   Since CSS is global, we keep them in a single shared file. */

@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import Header from './components/Header';
-import NavBar from './components/NavBar';
-import CurrentListView from './components/views/CurrentListView';
 import HistorySearchView from './components/views/HistorySearchView';
 import { isApiKeyConfigured } from './services/api';
 import type { AppView } from './types/nyt';
@@ -13,10 +11,8 @@ export default function App() {
 
   const renderView = () => {
     switch (currentView) {
-      case 'history-search':
-        return <HistorySearchView />;
       default:
-        return <CurrentListView />;
+        return <HistorySearchView />;
     }
   };
 
@@ -28,12 +24,52 @@ export default function App() {
           <div className="error-msg">
             <strong>¡Error Crítico!</strong><br /><br />
             No se pudo cargar la API_KEY desde las variables de entorno. 
-            Asegúrate de tener un archivo .env con VITE_API_KEY configurado.
+            Asegúrate de tener un archivo .env con VITE_NYT_API_KEY configurado.
           </div>
         ) : (
           <>
-            <NavBar currentView={currentView} onNavigate={setCurrentView} />
-            <div style={{ marginTop: '2rem' }}>
+            {/* Navegación interna minimalista */}
+            <nav className="inline-nav" style={{ 
+              display: 'flex', 
+              gap: '1.5rem', 
+              justifyContent: 'center', 
+              marginBottom: '2rem',
+              borderBottom: '1px solid var(--border-color)',
+              paddingBottom: '1rem'
+            }}>
+              <button 
+                onClick={() => setCurrentView('current')}
+                className={`nav-link-btn ${currentView === 'current' ? 'active' : ''}`}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: currentView === 'current' ? 'var(--accent-color)' : 'var(--meta-text)',
+                  cursor: 'pointer',
+                  fontSize: '1rem',
+                  fontWeight: currentView === 'current' ? 'bold' : 'normal',
+                  fontFamily: 'inherit'
+                }}
+              >
+                Best Sellers
+              </button>
+              <button 
+                onClick={() => setCurrentView('history-search')}
+                className={`nav-link-btn ${currentView === 'history-search' ? 'active' : ''}`}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: currentView === 'history-search' ? 'var(--accent-color)' : 'var(--meta-text)',
+                  cursor: 'pointer',
+                  fontSize: '1rem',
+                  fontWeight: currentView === 'history-search' ? 'bold' : 'normal',
+                  fontFamily: 'inherit'
+                }}
+              >
+                Buscador
+              </button>
+            </nav>
+
+            <div className="view-transition-wrapper">
               {renderView()}
             </div>
           </>

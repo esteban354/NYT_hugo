@@ -36,25 +36,6 @@ export interface CategoryName {
   updated: string;
 }
 
-export interface RankHistory {
-  primary_isbn10: string;
-  primary_isbn13: string;
-  rank: number;
-  list_name: string;
-  published_date: string;
-  weeks_on_list: number;
-}
-
-export interface BookHistory {
-  title: string;
-  author: string;
-  description: string;
-  contributor: string;
-  publisher: string;
-  isbns: { isbn10: string; isbn13: string }[];
-  ranks_history: RankHistory[];
-}
-
 export interface Review {
   url: string;
   publication_dt: string;
@@ -72,25 +53,10 @@ export interface BooksListResponse {
   };
 }
 
-export interface DateListResponse {
-  results: {
-    books: Book[];
-  };
-}
-
 export interface NamesResponse {
   results: {
     lists: CategoryName[];
   };
-}
-
-export interface HistoryResponse {
-  results: BookHistory[];
-}
-
-export interface HistoryPaginatedResponse {
-  num_results: number;
-  results: BookHistory[];
 }
 
 export interface ReviewsResponse {
@@ -101,11 +67,6 @@ export interface ReviewsResponse {
 
 export type AppView = 
   | 'current'
-  | 'history'
-  | 'history-search'
-  | 'isbn-details'
-  | 'reviews'
-  | 'categories'
-  | 'date-list';
+  | 'history-search';
 
 export type BookSubSection = 'trade-fiction-paperback';

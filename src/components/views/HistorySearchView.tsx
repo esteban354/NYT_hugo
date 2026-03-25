@@ -1,117 +1,135 @@
-import { useState } from 'react';
-import BookHistoryCard from '../BookHistoryCard';
+import { useState, useEffect } from 'react';
+import BookCard from '../BookCard';
 import Loader from '../Loader';
 import ErrorMessage from '../ErrorMessage';
 import ContentGrid from '../ContentGrid';
 import Pagination from '../Pagination';
 import ExportButton from '../ExportButton';
-import { fetchBestsellersHistory } from '../../services/api';
-import type { BookHistory } from '../../types/nyt';
+import { fetchCurrentBestsellers } from '../../services/api';
+import type { Book } from '../../types/nyt';
 import '../views/views.css';
 
-const PAGE_SIZE = 20;
+// Configuración de paginación cliente
+const ITEMS_PER_PAGE = 5;
 
 export default function HistorySearchView() {
-  const [title, setTitle] = useState('');
-  const [author, setAuthor] = useState('');
-  const [books, setBooks] = useState<BookHistory[]>([]);
-  const [totalResults, setTotalResults] = useState(0);
-  const [offset, setOffset] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [titleQuery, setTitleQuery] = useState('');
+  const [authorQuery, setAuthorQuery] = useState('');
+  const [allBooks, setAllBooks] = useState<Book[]>([]);
+  const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searched, setSearched] = useState(false);
-  const [isMerged, setIsMerged] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  async function doSearch(newOffset: number) {
-    try {
-      setLoading(true);
-      setError(null);
-      const result = await fetchBestsellersHistory({
-        title: title.trim() || undefined,
-        author: author.trim() || undefined,
-        offset: newOffset,
-      });
-      setBooks(result.data.results || []);
-      setTotalResults(result.data.num_results ?? 0);
-      setOffset(newOffset);
-      setSearched(true);
-      setIsMerged(!!result.merged);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error desconocido');
-    } finally {
-      setLoading(false);
+  // Carga inicial de datos (todos los mejores vendidos actuales)
+  useEffect(() => {
+    async function loadInitialData() {
+      try {
+        setLoading(true);
+        setError(null);
+        // Usamos una lista general para tener un pool de datos
+        const response = await fetchCurrentBestsellers('trade-fiction-paperback');
+        setAllBooks(response.results.books || []);
+        setFilteredBooks(response.results.books || []);
+      } catch (err) {
+        console.error('Error al cargar libros:', err);
+        setError('No se pudieron obtener los datos de la API. Verifica tu conexión o API Key.');
+      } finally {
+        setLoading(false);
+      }
     }
-  }
+    loadInitialData();
+  }, []);
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setOffset(0);
-    doSearch(0);
-  }
+  // Lógica de búsqueda y filtrado CLIENTE
+  const handleSearch = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    
+    setLoading(true);
+    
+    // Simular un pequeño delay de búsqueda para feedback visual
+    setTimeout(() => {
+      const results = allBooks.filter(book => {
+        const matchesTitle = book.title.toLowerCase().includes(titleQuery.toLowerCase().trim());
+        const matchesAuthor = book.author.toLowerCase().includes(authorQuery.toLowerCase().trim());
+        return matchesTitle && matchesAuthor;
+      });
 
-  function handlePageChange(newOffset: number) {
-    doSearch(newOffset);
-  }
+      setFilteredBooks(results);
+      setCurrentPage(1); // Resetear a la primera página al buscar
+      setLoading(false);
+    }, 300);
+  };
+
+  // Lógica de paginación CLIENTE (usando .slice)
+  const totalResults = filteredBooks.length;
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedBooks = filteredBooks.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  const handlePageChange = (newOffset: number) => {
+    // El componente Pagination espera un offset (index), lo convertimos a número de página
+    const newPage = Math.floor(newOffset / ITEMS_PER_PAGE) + 1;
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <div className="view-container">
-      <h2 className="section-title">Buscar en Best Sellers</h2>
+      <h2 className="section-title">Buscador NYT (Explorador de Libros)</h2>
 
-      <form className="search-form multi-field" onSubmit={handleSubmit}>
+      {/* Formulario de búsqueda funcional */}
+      <form className="search-form multi-field" onSubmit={handleSearch}>
         <input
           type="text"
           className="search-input"
-          placeholder="Titulo..."
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Buscar por título..."
+          value={titleQuery}
+          onChange={(e) => setTitleQuery(e.target.value)}
         />
         <input
           type="text"
           className="search-input"
-          placeholder="Autor..."
-          value={author}
-          onChange={(e) => setAuthor(e.target.value)}
+          placeholder="Buscar por autor..."
+          value={authorQuery}
+          onChange={(e) => setAuthorQuery(e.target.value)}
         />
         <button type="submit" className="search-btn">
           Buscar
         </button>
       </form>
 
-      {loading && <Loader />}
-      {error && <ErrorMessage message={error} />}
-
-      {!loading && !error && searched && books.length === 0 && (
-        <p style={{ color: 'var(--meta-text)', marginTop: '1.5rem' }}>
-          No se encontraron resultados. Intenta con otros terminos.
-        </p>
-      )}
-
-      {!loading && !error && books.length > 0 && (
+      {loading ? (
+        <Loader />
+      ) : error ? (
+        <ErrorMessage message={error} />
+      ) : (
         <>
-          {isMerged && (
-            <p style={{
-              color: 'var(--meta-text)',
-              fontSize: '0.85rem',
-              marginBottom: '1rem',
-              borderLeft: '3px solid var(--border-color)',
-              paddingLeft: '0.75rem',
-            }}>
-              Resultados combinados de busqueda por titulo y autor (duplicados eliminados).
-            </p>
+          <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span className="text-muted">
+              Mostrando {paginatedBooks.length} de {totalResults} resultados
+            </span>
+            <ExportButton data={filteredBooks} filename="busqueda_nyt" />
+          </div>
+
+          {filteredBooks.length > 0 ? (
+            <ContentGrid title={titleQuery || authorQuery ? `Resultados para su búsqueda` : "Libros Destacados"}>
+              {paginatedBooks.map((book) => (
+                <BookCard key={book.title} book={book} />
+              ))}
+            </ContentGrid>
+          ) : (
+            <div className="error-msg">
+              No se encontraron libros que coincidan con "{titleQuery || authorQuery}". 
+              Intenta con otros términos o deja los campos vacíos para ver todo.
+            </div>
           )}
-          <ExportButton data={books} filename="historial_bestsellers" />
-          <ContentGrid
-            title={`${totalResults} resultado${totalResults !== 1 ? 's' : ''} encontrado${totalResults !== 1 ? 's' : ''}`}
-          >
-            {books.map((book, i) => (
-              <BookHistoryCard key={`${book.title}-${i}`} book={book} />
-            ))}
-          </ContentGrid>
-          {!isMerged && totalResults > PAGE_SIZE && (
+
+          {/* Componente de paginación integrado */}
+          {totalResults > ITEMS_PER_PAGE && (
             <Pagination
-              currentOffset={offset}
+              currentOffset={startIndex}
               totalResults={totalResults}
-              pageSize={PAGE_SIZE}
+              pageSize={ITEMS_PER_PAGE}
               onPageChange={handlePageChange}
             />
           )}
